@@ -113,7 +113,8 @@
 
         // --- UI GENERATION UTILITIES ---
 
-        const Button = (text, onClickAction, variant = 'primary', iconName = null, disabled = false, type = 'button') => {
+        // FIX: Updated Button utility signature and logic to correctly handle dataPage
+        const Button = (text, onClickAction, variant = 'primary', iconName = null, disabled = false, type = 'button', orderId = null, dataPage = null) => {
             const baseStyle = "flex items-center justify-center space-x-2 px-6 py-3 rounded-xl font-semibold transition duration-200 shadow-md transform active:scale-[0.98]";
             let colorStyle = "";
 
@@ -134,7 +135,15 @@
             const iconHtml = iconName ? getIconHTML(iconName, 'w-5 h-5') : '';
             const disabledAttr = disabled ? 'disabled' : '';
             
-            return `<button type="${type}" data-action="${onClickAction}" ${disabledAttr} class="${baseStyle} ${colorStyle} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}">
+            // Ensure the data-action attribute is always present and matches the function name (without arguments)
+            let actionName = onClickAction.split('(')[0].trim();
+            
+            // Add data attributes based on parameters
+            const orderIdAttr = orderId ? `data-order-id="${orderId}"` : '';
+            const dataPageAttr = dataPage ? `data-page="${dataPage}"` : '';
+
+
+            return `<button type="${type}" data-action="${actionName}" ${orderIdAttr} ${dataPageAttr} ${disabledAttr} class="${baseStyle} ${colorStyle} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}">
                 ${iconHtml}
                 <span>${text}</span>
             </button>`;
@@ -198,10 +207,17 @@
 
         // This function is new and fixes the checklist state update/re-render issue
         const togglePackingStep = (orderId, step) => {
-            if (packingChecklist[orderId]) {
-                packingChecklist[orderId][step] = !packingChecklist[orderId][step];
-                render();
+            // Initialize checklist for the order if it doesn't exist (e.g., direct packing link)
+            if (!packingChecklist[orderId]) {
+                 packingChecklist[orderId] = PACKING_STEPS.reduce((acc, s) => {
+                    acc[s] = false;
+                    return acc;
+                }, {});
             }
+            
+            // Toggle the step
+            packingChecklist[orderId][step] = !packingChecklist[orderId][step];
+            render();
         };
         
         // --- PAGE RENDERING FUNCTIONS ---
@@ -267,18 +283,10 @@
                     <div class="mb-8"> 
                         <h2 class="text-2xl font-semibold text-gray-800 mb-4">Quick Actions</h2>
                         <div class="flex flex-wrap gap-4">
-                            <button data-action="navigateTo" data-page="ordersInbox" class="flex items-center justify-center space-x-2 px-6 py-3 rounded-xl font-semibold transition duration-200 shadow-md transform active:scale-[0.98] bg-yellow-400 text-gray-900 hover:bg-yellow-500 focus:ring-4 focus:ring-yellow-200">
-                                ${getIconHTML('ShoppingCart', 'w-5 h-5')}
-                                <span>View New Orders (${pendingConfirmations})</span>
-                            </button>
-                            <button data-action="navigateTo" data-page="packing" class="flex items-center justify-center space-x-2 px-6 py-3 rounded-xl font-semibold transition duration-200 shadow-md transform active:scale-[0.98] bg-white text-yellow-600 border border-yellow-400 hover:bg-yellow-50">
-                                ${getIconHTML('Package', 'w-5 h-5')}
-                                <span>Continue Packing (${packedOrders})</span>
-                            </button>
-                            <button data-action="navigateTo" data-page="readyForPickup" class="flex items-center justify-center space-x-2 px-6 py-3 rounded-xl font-semibold transition duration-200 shadow-md transform active:scale-[0.98] bg-white text-yellow-600 border border-yellow-400 hover:bg-yellow-50">
-                                ${getIconHTML('Truck', 'w-5 h-5')}
-                                <span>Ready for Pickup (${readyOrders})</span>
-                            </button>
+                            <!-- FIX: dataPage is now correctly passed as the 8th argument to Button -->
+                            ${Button('View New Orders (' + pendingConfirmations + ')', 'navigateTo', 'primary', 'ShoppingCart', false, 'button', null, 'ordersInbox')}
+                            ${Button('Continue Packing (' + packedOrders + ')', 'navigateTo', 'secondary', 'Package', false, 'button', null, 'packing')}
+                            ${Button('Ready for Pickup (' + readyOrders + ')', 'navigateTo', 'secondary', 'Truck', false, 'button', null, 'readyForPickup')}
                         </div>
                     </div>
 
@@ -310,8 +318,8 @@
                     </div>
                     <div class="flex flex-col space-y-2 w-full md:w-auto">
                         ${order.stage === 'new' ? `
-                            ${Button('Confirm Order', `confirmOrder('${order.id}')`, 'primary', 'CheckCircle')}
-                            ${Button('Decline', 'declineOrder', 'danger', 'XCircle')}
+                            ${Button('Confirm Order', 'confirmOrder', 'primary', 'CheckCircle', false, 'button', order.id)}
+                            ${Button('Decline', 'declineOrder', 'danger', 'XCircle', false, 'button', order.id)}
                         ` : ''}
                     </div>
                 </div>
@@ -385,9 +393,8 @@
                         <div class="text-center p-10 bg-blue-50 rounded-xl border border-dashed border-blue-300">
                             ${getIconHTML('Package', 'w-10 h-10 text-blue-500 mx-auto mb-3')}
                             <p class="text-lg text-blue-800 font-semibold">No orders are currently in the packing stage.</p>
-                            <button data-action="navigateTo" data-page="ordersInbox" class="mt-4 text-sm text-yellow-600 hover:text-yellow-800 bg-white border border-yellow-400 px-4 py-2 rounded-xl shadow-md transition duration-150">
-                                Check New Orders
-                            </button>
+                            <!-- FIX: dataPage is now correctly passed as the 8th argument to Button -->
+                            ${Button('Check New Orders', 'navigateTo', 'secondary', null, false, 'button', null, 'ordersInbox')}
                         </div>
                     </div>
                 `;
@@ -398,6 +405,7 @@
 
             const checklistHtml = PACKING_STEPS.map((step) => {
                 const checked = currentChecklist[step];
+                // The div is the clickable area, and uses data-action
                 return `
                     <div 
                         data-step="${step}"
@@ -446,11 +454,10 @@
                         </div>
                     `, 'mb-6')}
 
-                    ${Button('Mark as Packed & Ready for Pickup', `markAsPacked('${currentOrder.id}')`, 'primary', 'CheckCircle', !isChecklistComplete, 'button', 'w-full text-lg')}
+                    ${Button('Mark as Packed & Ready for Pickup', 'markAsPacked', 'primary', 'CheckCircle', !isChecklistComplete, 'button', currentOrder.id, null, 'w-full text-lg')}
                     <div class="text-center mt-4">
-                        <button data-action="navigateTo" data-page="dashboard" class="text-sm text-yellow-600 hover:text-yellow-800">
-                            Back to Dashboard
-                        </button>
+                        <!-- FIX: dataPage is now correctly passed as the 8th argument to Button -->
+                        ${Button('Back to Dashboard', 'navigateTo', 'secondary', null, false, 'button', null, 'dashboard')}
                     </div>
                 </div>
             `;
@@ -474,7 +481,7 @@
                             <p class="text-sm text-gray-500">Order ID: ${order.id} | Delivery: ${order.deliveryPartner}</p>
                         </div>
                     </div>
-                    ${Button('Hand Over to Partner', `handOverOrder('${order.id}')`, 'primary', 'Truck')}
+                    ${Button('Hand Over to Partner', 'handOverOrder', 'primary', 'Truck', false, 'button', order.id)}
                 </div>
             `)).join('');
 
@@ -514,7 +521,8 @@
                             </div>
 
                             <div class="mt-8">
-                                ${Button('Return to Dashboard', 'navigateTo("dashboard")', 'primary', 'Home')}
+                                <!-- FIX: dataPage is now correctly passed as the 8th argument to Button -->
+                                ${Button('Return to Dashboard', 'navigateTo', 'primary', 'Home', false, 'button', null, 'dashboard')}
                             </div>
                         </div>
                     `, 'max-w-md w-full p-8 text-center')}
@@ -643,12 +651,16 @@
             // Specific listener for dashboard stat navigation
             const dashboardStats = document.getElementById('dashboardStats');
             if(dashboardStats) {
+                // Ensure we only attach a single listener
+                dashboardStats.removeEventListener('click', handleDashboardStatClick);
                 dashboardStats.addEventListener('click', handleDashboardStatClick);
             }
             
             // Specific listener for packing checklist
             const checklistContainer = document.getElementById('packingChecklistContainer');
             if (checklistContainer) {
+                // Ensure we only attach a single listener
+                checklistContainer.removeEventListener('click', handleChecklistClick);
                 checklistContainer.addEventListener('click', handleChecklistClick);
             }
         }
@@ -658,7 +670,6 @@
             if (!target) return;
 
             const action = target.getAttribute('data-action');
-            const page = target.getAttribute('data-page');
             const orderId = target.getAttribute('data-order-id');
 
             // Prevent navigation on disabled buttons
@@ -667,8 +678,19 @@
                 return;
             }
 
-            if (action === 'navigateTo' && page) {
-                navigateTo(page);
+            if (action === 'navigateTo') {
+                // FIX: Rely solely on the data-page attribute for navigation
+                const navPage = target.getAttribute('data-page'); 
+                if (navPage) {
+                    navigateTo(navPage);
+                } else {
+                    console.error('Navigation button missing data-page attribute:', target);
+                }
+            } else if (action === 'login') {
+                // Login is handled by handleFormSubmit, but this handles simple button clicks if form context is missing
+                if (target.type !== 'submit') { // Only run if it's not the submit button in the form
+                     login();
+                }
             } else if (action === 'confirmOrder' && orderId) {
                 confirmOrder(orderId);
             } else if (action === 'markAsPacked' && orderId) {
@@ -677,19 +699,15 @@
                 handOverOrder(orderId);
             } else if (action === 'logout') {
                 logout();
-            } else if (action === 'declineOrder') {
-                // In a real app, this would update the order status to 'cancelled'
-                // For simplicity, we just filter it out here (mock decline)
+            } else if (action === 'declineOrder' && orderId) {
+                // Mock decline without modal
                 const card = target.closest('.bg-white');
                 if (card) {
-                    const confirmDecline = window.confirm("Are you sure you want to decline this order? This action cannot be undone.");
-                    if (confirmDecline) {
-                        card.style.opacity = 0;
-                        setTimeout(() => {
-                            orders = orders.filter(o => o.id !== orderId);
-                            render();
-                        }, 300);
-                    }
+                    card.style.opacity = 0;
+                    setTimeout(() => {
+                        orders = orders.filter(o => o.id !== orderId);
+                        render();
+                    }, 300);
                 }
             }
         }
