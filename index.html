@@ -54,11 +54,13 @@
             LogIn: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" x2="3" y1="12" y2="12"/></svg>',
             ShoppingCart: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.72a2 2 0 0 0 2-1.58L23 6H6"/></svg>',
             CheckCircle: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg>',
-            Package: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7.5 4.27 9 5.15"/><path d="M2.5 10.45 7.5 13l5-2.5"/><path d="m16.5 4.27-5 2.5-5-2.5"/><path d="M12.5 13.5v6.5m0 0 5-2.5m-5 2.5-5-2.5m10-6.13-5 2.5-5-2.5"/></svg>',
+            Package: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7.5 4.27 9 5.15"/><path d="M2.5 10.45 7.5 13l5-2.5"/><path d="m16.5 4.27-5 2.5-5-2.5"/><path d="M12.5 13.5v6.5m0 0 5-2.5m-5 2.5-5-2.5m10-6.13-5 2.5-5 2.5"/></svg>',
             Truck: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 18V6a2 2 0 0 0-2-2H3v15a2 2 0 0 0 2 2h14v-2"/><path d="M20 8h-4v6h4"/><path d="M22 12h-2"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></svg>',
             Clock: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
             DollarSign: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" x2="12" y1="2" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>',
             User: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
+            // Added Hourglass for pending confirmation
+            Hourglass: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 22h14"/><path d="M5 2h14"/><path d="M17 22H7a5 5 0 0 1-5-5V9a5 5 0 0 1 5-5h10a5 5 0 0 1 5 5v8a5 5 0 0 1-5 5z"/><path d="M17 9c0 3-2 5-2 5s-2 1-2 5"/><path d="M7 15c0-3 2-5 2-5s2-1 2-5"/></svg>',
             // Updated Zap icon with your new logo
             Zap: `<img src="Untitled design.png" alt="Digistore Logo" class="w-full h-full object-contain">`,
             Check: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>',
@@ -265,7 +267,8 @@
 
             const stats = [
                 { title: 'Total Orders', value: totalOrders, icon: 'ShoppingCart', color: 'text-gray-600', page: 'ordersInbox' },
-                { title: 'Pending Confirmations', value: pendingConfirmations, icon: 'Zap', color: 'text-red-500', page: 'ordersInbox' },
+                // Updated to use Hourglass icon
+                { title: 'Pending Confirmations', value: pendingConfirmations, icon: 'Hourglass', color: 'text-red-500', page: 'ordersInbox' },
                 { title: 'Packed & Ready', value: readyOrders, icon: 'Truck', color: 'text-yellow-500', page: 'readyForPickup' },
                 { title: 'Orders Handed Over', value: completedOrders, icon: 'CheckCircle', color: 'text-green-500', page: 'dashboard' },
             ];
@@ -278,20 +281,22 @@
             
             return `
                 <div class="p-4 sm:p-8">
-                    <h1 class="text-3xl font-bold text-gray-800 mb-6">Partner Dashboard</h1>
-                    
-                    <div class="mb-8"> 
-                        <h2 class="text-2xl font-semibold text-gray-800 mb-4">Quick Actions</h2>
-                        <div class="flex flex-wrap gap-4">
-                            <!-- FIX: dataPage is now correctly passed as the 8th argument to Button -->
-                            ${Button('View New Orders (' + pendingConfirmations + ')', 'navigateTo', 'primary', 'ShoppingCart', false, 'button', null, 'ordersInbox')}
-                            ${Button('Continue Packing (' + packedOrders + ')', 'navigateTo', 'secondary', 'Package', false, 'button', null, 'packing')}
-                            ${Button('Ready for Pickup (' + readyOrders + ')', 'navigateTo', 'secondary', 'Truck', false, 'button', null, 'readyForPickup')}
+                    <div class="max-w-6xl mx-auto"> <!-- ADDED: Constrain and center content on wide screens -->
+                        <h1 class="text-3xl font-bold text-gray-800 mb-6">Partner Dashboard</h1>
+                        
+                        <div class="mb-8"> 
+                            <h2 class="text-2xl font-semibold text-gray-800 mb-4">Quick Actions</h2>
+                            <div class="flex flex-wrap gap-4">
+                                <!-- Updated to use Hourglass icon -->
+                                ${Button('View New Orders (' + pendingConfirmations + ')', 'navigateTo', 'primary', 'Hourglass', false, 'button', null, 'ordersInbox')}
+                                ${Button('Continue Packing (' + packedOrders + ')', 'navigateTo', 'secondary', 'Package', false, 'button', null, 'packing')}
+                                ${Button('Ready for Pickup (' + readyOrders + ')', 'navigateTo', 'secondary', 'Truck', false, 'button', null, 'readyForPickup')}
+                            </div>
                         </div>
-                    </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" id="dashboardStats">
-                        ${statsHtml}
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" id="dashboardStats">
+                            ${statsHtml}
+                        </div>
                     </div>
                 </div>
             `;
@@ -343,13 +348,16 @@
 
             return `
                 <div class="p-4 sm:p-8">
-                    <h1 class="text-3xl font-bold text-gray-800 mb-6 flex items-center space-x-3">
-                        ${getIconHTML('ShoppingCart', 'w-7 h-7 text-yellow-500')}
-                        <span>New Orders Inbox (${newOrders.length})</span>
-                    </h1>
-                    <p class="text-gray-500 mb-6">Review and confirm incoming customer orders.</p>
-                    <div class="space-y-6">
-                        ${ordersListHtml}
+                    <div class="max-w-6xl mx-auto"> <!-- ADDED: Constrain and center content on wide screens -->
+                        <h1 class="text-3xl font-bold text-gray-800 mb-6 flex items-center space-x-3">
+                            <!-- Updated to use Hourglass icon -->
+                            ${getIconHTML('Hourglass', 'w-7 h-7 text-yellow-500')}
+                            <span>New Orders Inbox (${newOrders.length})</span>
+                        </h1>
+                        <p class="text-gray-500 mb-6">Review and confirm incoming customer orders.</p>
+                        <div class="space-y-6">
+                            ${ordersListHtml}
+                        </div>
                     </div>
                 </div>
             `;
@@ -393,8 +401,8 @@
                         <div class="text-center p-10 bg-blue-50 rounded-xl border border-dashed border-blue-300">
                             ${getIconHTML('Package', 'w-10 h-10 text-blue-500 mx-auto mb-3')}
                             <p class="text-lg text-blue-800 font-semibold">No orders are currently in the packing stage.</p>
-                            <!-- FIX: dataPage is now correctly passed as the 8th argument to Button -->
-                            ${Button('Check New Orders', 'navigateTo', 'secondary', null, false, 'button', null, 'ordersInbox')}
+                            <!-- Updated to use Hourglass icon -->
+                            ${Button('Check New Orders', 'navigateTo', 'secondary', 'Hourglass', false, 'button', null, 'ordersInbox')}
                         </div>
                     </div>
                 `;
@@ -487,13 +495,15 @@
 
             return `
                 <div class="p-4 sm:p-8">
-                    <h1 class="text-3xl font-bold text-gray-800 mb-6 flex items-center space-x-3">
-                        ${getIconHTML('Truck', 'w-7 h-7 text-yellow-500')}
-                        <span>Ready for Pickup (${readyOrders.length})</span>
-                    </h1>
-                    <p class="text-gray-500 mb-6">Orders ready to be handed over to the delivery partner.</p>
-                    <div class="space-y-6">
-                        ${ordersListHtml}
+                    <div class="max-w-6xl mx-auto"> <!-- ADDED: Constrain and center content on wide screens -->
+                        <h1 class="text-3xl font-bold text-gray-800 mb-6 flex items-center space-x-3">
+                            ${getIconHTML('Truck', 'w-7 h-7 text-yellow-500')}
+                            <span>Ready for Pickup (${readyOrders.length})</span>
+                        </h1>
+                        <p class="text-gray-500 mb-6">Orders ready to be handed over to the delivery partner.</p>
+                        <div class="space-y-6">
+                            ${ordersListHtml}
+                        </div>
                     </div>
                 </div>
             `;
@@ -534,7 +544,8 @@
         function AppLayout(content) {
             const menuItems = [
                 { page: 'dashboard', icon: 'Home', label: 'Dashboard' },
-                { page: 'ordersInbox', icon: 'ShoppingCart', label: `New Orders (${getOrdersByStage().new.length})` },
+                // Updated to use Hourglass icon
+                { page: 'ordersInbox', icon: 'Hourglass', label: `New Orders (${getOrdersByStage().new.length})` },
                 { page: 'packing', icon: 'Package', label: `Packing (${getOrdersByStage().packing.length})` },
                 { page: 'readyForPickup', icon: 'Truck', label: `Ready for Pickup (${getOrdersByStage().ready.length})` },
             ];
