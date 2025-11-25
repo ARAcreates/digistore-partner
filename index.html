@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digistore Partner - Order Management Portal</title>
+    <!-- Load Tailwind CSS --><script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styles for the app */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f9fafb; /* Light Gray Background */
+        }
+        .animate-bounce {
+            animation: bounce 1s infinite;
+        }
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateY(-25%);
+                animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
+            }
+            50% {
+                transform: translateY(0);
+                animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
+            }
+        }
+        /* Style for the fixed mobile navigation bar */
+        .mobile-nav-bar {
+            box-shadow: 0 -4px 6px -1px rgb(0 0 0 / 0.1), 0 -2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+        /* Ensure the main content area has space for the fixed navs */
+        .main-content {
+            min-height: calc(100vh - 4rem); /* Adjust for header if needed */
+        }
+    </style>
+</head>
+<body>
+    <div id="app" class="min-h-screen bg-gray-50 flex">
+        <!-- Application content will be rendered here --></div>
+
+    <script>
+        // --- MOCK DATA & UTILITIES (Same as React) ---
+
+        const mockOrders = [
+            { id: 'O1001', productName: 'Apple Watch Series 9', productImage: 'https://placehold.co/100x100/34D399/ffffff?text=WATCH', quantity: 1, price: 34399.00, paymentMethod: 'Card (Prepaid)', stage: 'new', buyerName: 'Alice Johnson', deliveryPartner: 'Flash Logistics', handoverTime: null },
+            { id: 'O1002', productName: 'AirPods Pro (2nd Gen)', productImage: 'https://placehold.co/100x100/60A5FA/ffffff?text=AIRPODS', quantity: 2, price: 19900.00, paymentMethod: 'Cash on Delivery', stage: 'new', buyerName: 'Bob Smith', deliveryPartner: 'Reliant Express', handoverTime: null },
+            { id: 'O1003', productName: 'MacBook Air M3', productImage: 'https://placehold.co/100x100/FBBF24/333?text=MACBOOK', quantity: 1, price: 87999.00, paymentMethod: 'Card (Prepaid)', stage: 'packing', buyerName: 'Charlie Brown', deliveryPartner: 'Speedy Couriers', handoverTime: null },
+            { id: 'O1004', productName: 'iPhone 15 Pro Max', productImage: 'https://placehold.co/100x100/EF4444/ffffff?text=IPHONE', quantity: 1, price: 95999.00, paymentMethod: 'Cash on Delivery', stage: 'ready', buyerName: 'Diana Prince', deliveryPartner: 'Flash Logistics', handoverTime: '2025-05-15T10:30:00Z' },
+        ];
+        
+        // Use lucide-react SVGs converted to HTML strings
+        const ICONS = {
+            LogIn: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" x2="3" y1="12" y2="12"/></svg>',
+            ShoppingCart: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.72a2 2 0 0 0 2-1.58L23 6H6"/></svg>',
+            CheckCircle: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg>',
+            Package: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7.5 4.27 9 5.15"/><path d="M2.5 10.45 7.5 13l5-2.5"/><path d="m16.5 4.27-5 2.5-5-2.5"/><path d="M12.5 13.5v6.5m0 0 5-2.5m-5 2.5-5-2.5m10-6.13-5 2.5-5-2.5"/></svg>',
+            Truck: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 18V6a2 2 0 0 0-2-2H3v15a2 2 0 0 0 2 2h14v-2"/><path d="M20 8h-4v6h4"/><path d="M22 12h-2"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></svg>',
+            Clock: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
+            DollarSign: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" x2="12" y1="2" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>',
+            User: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
+            // Updated Zap icon with your new logo
+            Zap: `<img src="https://assets-c3d3876d04d9c748280f555c-digistore.s3.ap-south-1.amazonaws.com/ds_logo.png" alt="Digistore Logo" class="w-full h-full object-contain">`,
+            Check: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>',
+            Box: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8.25c0-.46-.35-.85-.8-.92l-4.78-.96-3.8-7.58a1 1 0 0 0-1.78 0l-3.8 7.58-4.78.96c-.45.07-.8.46-.8.92v6.5c0 .46.35.85.8.92l4.78.96 3.8 7.58a1 1 0 0 0 1.78 0l3.8-7.58 4.78-.96c.45-.07.8-.46.8-.92V8.25z"/></svg>',
+            XCircle: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg>',
+            Home: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>'
+        };
+
+        const formatCurrency = (amount) => {
+            const formatter = new Intl.NumberFormat('en-IN', {
+                style: 'currency',
+                currency: 'INR',
+                minimumFractionDigits: 0,
+            });
+            return formatter.format(amount);
+        };
+
+        const getIconHTML = (name, className = 'w-5 h-5') => {
+            const svgOrImg = ICONS[name] || ICONS['Zap'];
+            // Inject the class name into the SVG/Img wrapper
+            // For the custom logo, we want to control its size specifically
+            if (name === 'Zap' && svgOrImg.includes('<img')) {
+                return `<span class="${className} p-0.5">${svgOrImg}</span>`; // Added p-0.5 to prevent icon cutoff, could be adjusted
+            }
+            return `<span class="${className}">${svgOrImg}</span>`;
+        };
+        
+        // --- APPLICATION STATE (Global) ---
+        let isAuthenticated = false;
+        let currentPage = 'login';
+        let orders = [...mockOrders];
+        let selectedOrder = null;
+        // The packing checklist state needs to persist across renders for the current selected order
+        let packingChecklist = {}; 
+        
+        const PACKING_STEPS = [
+            'Product inside box',
+            'Invoice slip added',
+            'Packaging sealed',
+            'Final quality check complete'
+        ];
+
+        // --- STATE DERIVATION ---
+        const getOrdersByStage = () => {
+            return {
+                new: orders.filter(o => o.stage === 'new'),
+                packing: orders.filter(o => o.stage === 'packing'),
+                ready: orders.filter(o => o.stage === 'ready'),
+                completed: orders.filter(o => o.stage === 'completed'),
+            };
+        };
+
+        // --- UI GENERATION UTILITIES ---
+
+        const Button = (text, onClickAction, variant = 'primary', iconName = null, disabled = false, type = 'button') => {
+            const baseStyle = "flex items-center justify-center space-x-2 px-6 py-3 rounded-xl font-semibold transition duration-200 shadow-md transform active:scale-[0.98]";
+            let colorStyle = "";
+
+            switch (variant) {
+                case 'primary':
+                    colorStyle = 'bg-yellow-400 text-gray-900 hover:bg-yellow-500 focus:ring-4 focus:ring-yellow-200';
+                    break;
+                case 'secondary':
+                    colorStyle = 'bg-white text-yellow-600 border border-yellow-400 hover:bg-yellow-50';
+                    break;
+                case 'danger':
+                    colorStyle = 'bg-red-500 text-white hover:bg-red-600';
+                    break;
+                default:
+                    colorStyle = 'bg-gray-200 text-gray-700 hover:bg-gray-300';
+            }
+            
+            const iconHtml = iconName ? getIconHTML(iconName, 'w-5 h-5') : '';
+            const disabledAttr = disabled ? 'disabled' : '';
+            
+            return `<button type="${type}" data-action="${onClickAction}" ${disabledAttr} class="${baseStyle} ${colorStyle} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}">
+                ${iconHtml}
+                <span>${text}</span>
+            </button>`;
+        };
+
+        const Card = (content, className = '') => {
+            return `<div class="bg-white p-6 rounded-2xl shadow-xl transition-all duration-300 hover:shadow-2xl ${className}">
+                ${content}
+            </div>`;
+        };
+        
+        // --- STATE TRANSITION HANDLERS ---
+
+        const navigateTo = (page, orderId = null) => {
+            currentPage = page;
+            if (orderId) {
+                selectedOrder = orders.find(o => o.id === orderId) || null;
+            } else if (page !== 'packing') {
+                selectedOrder = null;
+                // If leaving packing, clear checklist state
+                packingChecklist = {};
+            }
+            render();
+        };
+
+        const login = () => {
+            isAuthenticated = true;
+            navigateTo('dashboard');
+        };
+
+        const logout = () => {
+            isAuthenticated = false;
+            navigateTo('login');
+        };
+
+        const confirmOrder = (orderId) => {
+            orders = orders.map(o => o.id === orderId ? { ...o, stage: 'packing' } : o);
+            // Auto-navigate to packing page and select the confirmed order
+            navigateTo('packing', orderId);
+        };
+
+        const markAsPacked = (orderId) => {
+            orders = orders.map(o => o.id === orderId ? { ...o, stage: 'ready' } : o);
+            packingChecklist = {}; // Reset checklist
+            
+            // Try to auto-select the next packing order, otherwise go to dashboard
+            const nextPackingOrder = getOrdersByStage().packing.find(o => o.id !== orderId);
+            if (nextPackingOrder) {
+                navigateTo('packing', nextPackingOrder.id);
+            } else {
+                 // Clear selected order and return to dashboard
+                navigateTo('dashboard');
+            }
+        };
+
+        const handOverOrder = (orderId) => {
+            const handoverTime = new Date().toISOString();
+            orders = orders.map(o => o.id === orderId ? { ...o, stage: 'completed', handoverTime: handoverTime } : o);
+            navigateTo('handoverConfirmation', orderId);
+        };
+
+        // This function is new and fixes the checklist state update/re-render issue
+        const togglePackingStep = (orderId, step) => {
+            if (packingChecklist[orderId]) {
+                packingChecklist[orderId][step] = !packingChecklist[orderId][step];
+                render();
+            }
+        };
+        
+        // --- PAGE RENDERING FUNCTIONS ---
+
+        function LoginScreen() {
+            return `
+                <div class="min-h-screen flex items-center justify-center bg-gray-50 p-4 w-full">
+                    ${Card(`
+                        ${getIconHTML('LogIn', 'w-12 h-12 text-yellow-500 mx-auto mb-4')}
+                        <h2 class="text-3xl font-extrabold text-gray-900 mb-6">Digistore Partner Login</h2>
+                        <form id="loginForm" class="space-y-6">
+                            <div>
+                                <input
+                                    type="text"
+                                    required
+                                    id="username"
+                                    placeholder="Username (seller)"
+                                    class="appearance-none relative block w-full px-4 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 sm:text-sm"
+                                />
+                            </div>
+                            <div>
+                                <input
+                                    type="password"
+                                    required
+                                    id="password"
+                                    placeholder="Password (1234)"
+                                    class="appearance-none relative block w-full px-4 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 sm:text-sm"
+                                />
+                            </div>
+                            ${Button('Sign In', 'login', 'primary', 'LogIn', false, 'submit')}
+                            <p class="text-sm text-gray-500 mt-4">Demo credentials: seller / 1234</p>
+                        </form>
+                    `, 'max-w-md w-full p-8 text-center')}
+                </div>
+            `;
+        }
+
+        function Dashboard() {
+            const ordersByStage = getOrdersByStage();
+            const totalOrders = orders.length;
+            const pendingConfirmations = ordersByStage.new.length;
+            const packedOrders = ordersByStage.packing.length;
+            const readyOrders = ordersByStage.ready.length;
+            const completedOrders = ordersByStage.completed.length;
+
+            const stats = [
+                { title: 'Total Orders', value: totalOrders, icon: 'ShoppingCart', color: 'text-gray-600', page: 'ordersInbox' },
+                { title: 'Pending Confirmations', value: pendingConfirmations, icon: 'Zap', color: 'text-red-500', page: 'ordersInbox' },
+                { title: 'Packed & Ready', value: readyOrders, icon: 'Truck', color: 'text-yellow-500', page: 'readyForPickup' },
+                { title: 'Orders Handed Over', value: completedOrders, icon: 'CheckCircle', color: 'text-green-500', page: 'dashboard' },
+            ];
+
+            const statsHtml = stats.map(stat => Card(`
+                ${getIconHTML(stat.icon, `w-8 h-8 mb-4 ${stat.color}`)}
+                <p class="text-sm font-medium text-gray-500">${stat.title}</p>
+                <p class="text-4xl font-extrabold text-gray-900 mt-1">${stat.value}</p>
+            `, `flex flex-col justify-between cursor-pointer hover:scale-[1.02] data-navigate="${stat.page}"`)).join('');
+            
+            return `
+                <div class="p-4 sm:p-8">
+                    <h1 class="text-3xl font-bold text-gray-800 mb-6">Partner Dashboard</h1>
+                    
+                    <div class="mb-8"> 
+                        <h2 class="text-2xl font-semibold text-gray-800 mb-4">Quick Actions</h2>
+                        <div class="flex flex-wrap gap-4">
+                            <button data-action="navigateTo" data-page="ordersInbox" class="flex items-center justify-center space-x-2 px-6 py-3 rounded-xl font-semibold transition duration-200 shadow-md transform active:scale-[0.98] bg-yellow-400 text-gray-900 hover:bg-yellow-500 focus:ring-4 focus:ring-yellow-200">
+                                ${getIconHTML('ShoppingCart', 'w-5 h-5')}
+                                <span>View New Orders (${pendingConfirmations})</span>
+                            </button>
+                            <button data-action="navigateTo" data-page="packing" class="flex items-center justify-center space-x-2 px-6 py-3 rounded-xl font-semibold transition duration-200 shadow-md transform active:scale-[0.98] bg-white text-yellow-600 border border-yellow-400 hover:bg-yellow-50">
+                                ${getIconHTML('Package', 'w-5 h-5')}
+                                <span>Continue Packing (${packedOrders})</span>
+                            </button>
+                            <button data-action="navigateTo" data-page="readyForPickup" class="flex items-center justify-center space-x-2 px-6 py-3 rounded-xl font-semibold transition duration-200 shadow-md transform active:scale-[0.98] bg-white text-yellow-600 border border-yellow-400 hover:bg-yellow-50">
+                                ${getIconHTML('Truck', 'w-5 h-5')}
+                                <span>Ready for Pickup (${readyOrders})</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" id="dashboardStats">
+                        ${statsHtml}
+                    </div>
+                </div>
+            `;
+        }
+        
+        function OrderCard(order) {
+            return Card(`
+                <div class="flex flex-col md:flex-row items-start md:items-center space-y-4 md:space-y-0 md:space-x-6">
+                    <div class="flex-shrink-0">
+                        <img
+                            src="${order.productImage}"
+                            alt="${order.productName}"
+                            class="w-20 h-20 rounded-xl object-cover border border-gray-100"
+                        />
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <h3 class="text-xl font-semibold text-gray-900 truncate">${order.productName}</h3>
+                        <p class="text-sm text-gray-500">Order ID: ${order.id}</p>
+                        <div class="mt-2 text-sm space-y-1">
+                            <div class="flex items-center text-gray-700">${getIconHTML('DollarSign', 'w-4 h-4 mr-2 text-yellow-500')} Price: <span class="font-medium ml-1">${formatCurrency(order.price)}</span></div>
+                            <div class="flex items-center text-gray-700">${getIconHTML('Box', 'w-4 h-4 mr-2 text-yellow-500')} Qty: <span class="font-medium ml-1">${order.quantity}</span></div>
+                            <div class="flex items-center text-gray-700">${getIconHTML('Clock', 'w-4 h-4 mr-2 text-yellow-500')} Payment: <span class="font-medium ml-1">${order.paymentMethod}</span></div>
+                        </div>
+                    </div>
+                    <div class="flex flex-col space-y-2 w-full md:w-auto">
+                        ${order.stage === 'new' ? `
+                            ${Button('Confirm Order', `confirmOrder('${order.id}')`, 'primary', 'CheckCircle')}
+                            ${Button('Decline', 'declineOrder', 'danger', 'XCircle')}
+                        ` : ''}
+                    </div>
+                </div>
+            `, '');
+        }
+
+        function OrdersInbox() {
+            const newOrders = getOrdersByStage().new;
+
+            let ordersListHtml = '';
+            if (newOrders.length === 0) {
+                ordersListHtml = `
+                    <div class="text-center p-10 bg-yellow-50 rounded-xl border border-dashed border-yellow-300">
+                        ${getIconHTML('CheckCircle', 'w-10 h-10 text-yellow-500 mx-auto mb-3')}
+                        <p class="text-lg text-yellow-800 font-semibold">No new orders awaiting confirmation. Great job!</p>
+                    </div>
+                `;
+            } else {
+                ordersListHtml = newOrders.map(OrderCard).join('');
+            }
+
+            return `
+                <div class="p-4 sm:p-8">
+                    <h1 class="text-3xl font-bold text-gray-800 mb-6 flex items-center space-x-3">
+                        ${getIconHTML('ShoppingCart', 'w-7 h-7 text-yellow-500')}
+                        <span>New Orders Inbox (${newOrders.length})</span>
+                    </h1>
+                    <p class="text-gray-500 mb-6">Review and confirm incoming customer orders.</p>
+                    <div class="space-y-6">
+                        ${ordersListHtml}
+                    </div>
+                </div>
+            `;
+        }
+
+        function PackingPage() {
+            const packingOrders = getOrdersByStage().packing;
+            let currentOrder = selectedOrder;
+
+            // Auto-select logic for the packing page
+            if (!currentOrder || currentOrder.stage !== 'packing') {
+                currentOrder = packingOrders.length > 0 ? packingOrders[0] : null;
+                // Update selectedOrder state silently (without re-render)
+                selectedOrder = currentOrder; 
+                if (currentOrder) {
+                    // Initialize checklist for the new selected order if it wasn't already
+                    if (!packingChecklist[currentOrder.id]) {
+                        packingChecklist[currentOrder.id] = PACKING_STEPS.reduce((acc, step) => {
+                            acc[step] = false;
+                            return acc;
+                        }, {});
+                    }
+                }
+            }
+            
+            // If the selected order state changed, ensure checklist is reset for the new one
+            if (currentOrder && !packingChecklist[currentOrder.id]) {
+                 packingChecklist[currentOrder.id] = PACKING_STEPS.reduce((acc, step) => {
+                    acc[step] = false;
+                    return acc;
+                }, {});
+            }
+
+            if (!currentOrder) {
+                return `
+                    <div class="p-8 max-w-4xl mx-auto">
+                        <h1 class="text-3xl font-bold text-gray-800 mb-6 flex items-center space-x-3">
+                            ${getIconHTML('Package', 'w-7 h-7 text-yellow-500')}
+                            <span>Order Processing</span>
+                        </h1>
+                        <div class="text-center p-10 bg-blue-50 rounded-xl border border-dashed border-blue-300">
+                            ${getIconHTML('Package', 'w-10 h-10 text-blue-500 mx-auto mb-3')}
+                            <p class="text-lg text-blue-800 font-semibold">No orders are currently in the packing stage.</p>
+                            <button data-action="navigateTo" data-page="ordersInbox" class="mt-4 text-sm text-yellow-600 hover:text-yellow-800 bg-white border border-yellow-400 px-4 py-2 rounded-xl shadow-md transition duration-150">
+                                Check New Orders
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+
+            const currentChecklist = packingChecklist[currentOrder.id] || {};
+            const isChecklistComplete = PACKING_STEPS.every(step => currentChecklist[step] === true);
+
+            const checklistHtml = PACKING_STEPS.map((step) => {
+                const checked = currentChecklist[step];
+                return `
+                    <div 
+                        data-step="${step}"
+                        data-order-id="${currentOrder.id}"
+                        data-action="togglePackingStep"
+                        class="flex items-center text-lg text-gray-800 cursor-pointer transition duration-150 p-2 rounded-lg ${checked ? 'bg-green-50' : 'hover:bg-gray-50'}"
+                    >
+                        <input
+                            type="checkbox"
+                            ${checked ? 'checked' : ''}
+                            class="h-5 w-5 text-yellow-500 rounded border-gray-300 focus:ring-yellow-500 cursor-pointer mr-3 pointer-events-none"
+                        />
+                        <label class="flex-1 select-none pointer-events-none">
+                            ${step}
+                        </label>
+                    </div>
+                `;
+            }).join('');
+
+            return `
+                <div class="p-4 sm:p-8 max-w-4xl mx-auto">
+                    <h1 class="text-3xl font-bold text-gray-800 mb-6 flex items-center space-x-3">
+                        ${getIconHTML('Package', 'w-7 h-7 text-yellow-500')}
+                        <span>Packing Order ${currentOrder.id}</span>
+                    </h1>
+
+                    ${Card(`
+                        <h2 class="text-xl font-semibold text-yellow-800">Packing Instructions</h2>
+                        <p class="text-yellow-700 mt-1">Please pack the item securely to ensure safe transit to the customer. Complete all steps below.</p>
+                    `, 'mb-6 p-4 bg-yellow-50 border-l-4 border-yellow-500')}
+
+                    ${Card(`
+                        <div class="flex items-center space-x-4 mb-4">
+                            <img src="${currentOrder.productImage}" alt="${currentOrder.productName}" class="w-16 h-16 rounded-lg object-cover" />
+                            <div>
+                                <p class="text-xl font-semibold text-gray-900">${currentOrder.productName} (x${currentOrder.quantity})</p>
+                                <p class="text-sm text-gray-500">Buyer: ${currentOrder.buyerName}</p>
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-3 pt-4 border-t border-gray-100">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-2">Packing Steps Checklist:</h3>
+                            <div id="packingChecklistContainer">
+                                ${checklistHtml}
+                            </div>
+                        </div>
+                    `, 'mb-6')}
+
+                    ${Button('Mark as Packed & Ready for Pickup', `markAsPacked('${currentOrder.id}')`, 'primary', 'CheckCircle', !isChecklistComplete, 'button', 'w-full text-lg')}
+                    <div class="text-center mt-4">
+                        <button data-action="navigateTo" data-page="dashboard" class="text-sm text-yellow-600 hover:text-yellow-800">
+                            Back to Dashboard
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function ReadyForPickupPage() {
+            const readyOrders = getOrdersByStage().ready;
+
+            const ordersListHtml = readyOrders.length === 0 ? `
+                <div class="text-center p-10 bg-green-50 rounded-xl border border-dashed border-green-300">
+                    ${getIconHTML('Truck', 'w-10 h-10 text-green-500 mx-auto mb-3')}
+                    <p class="text-lg text-green-800 font-semibold">All packed orders have been handed over!</p>
+                    <p class="text-sm text-green-600 mt-2">Check the Packing or New Orders page for more work.</p>
+                </div>
+            ` : readyOrders.map(order => Card(`
+                <div class="flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
+                    <div class="flex items-center space-x-4">
+                        <img src="${order.productImage}" alt="${order.productName}" class="w-16 h-16 rounded-lg object-cover" />
+                        <div>
+                            <p class="text-xl font-semibold text-gray-900">${order.productName}</p>
+                            <p class="text-sm text-gray-500">Order ID: ${order.id} | Delivery: ${order.deliveryPartner}</p>
+                        </div>
+                    </div>
+                    ${Button('Hand Over to Partner', `handOverOrder('${order.id}')`, 'primary', 'Truck')}
+                </div>
+            `)).join('');
+
+            return `
+                <div class="p-4 sm:p-8">
+                    <h1 class="text-3xl font-bold text-gray-800 mb-6 flex items-center space-x-3">
+                        ${getIconHTML('Truck', 'w-7 h-7 text-yellow-500')}
+                        <span>Ready for Pickup (${readyOrders.length})</span>
+                    </h1>
+                    <p class="text-gray-500 mb-6">Orders ready to be handed over to the delivery partner.</p>
+                    <div class="space-y-6">
+                        ${ordersListHtml}
+                    </div>
+                </div>
+            `;
+        }
+
+        function HandoverConfirmationPage(orderId) {
+            const order = orders.find(o => o.id === orderId);
+            
+            if (!order) {
+                // Should not happen if logic is correct
+                return `<div class="p-8 text-center text-red-500">Order not found.</div>`;
+            }
+
+            return `
+                <div class="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+                    ${Card(`
+                        <div class="text-center">
+                            ${getIconHTML('CheckCircle', 'w-16 h-16 text-green-500 mx-auto animate-bounce')}
+                            <h2 class="text-3xl font-extrabold text-gray-900 mt-4">Handover Successful!</h2>
+                            <p class="text-lg text-gray-600 mt-2">Order <strong>${order.id}</strong> for <strong>${order.productName}</strong> has been handed over.</p>
+                            
+                            <div class="mt-6 bg-gray-50 p-4 rounded-xl border border-gray-200">
+                                <p class="text-sm font-medium text-gray-500">Handover Time:</p>
+                                <p class="text-xl font-bold text-gray-800">${new Date(order.handoverTime).toLocaleString()}</p>
+                            </div>
+
+                            <div class="mt-8">
+                                ${Button('Return to Dashboard', 'navigateTo("dashboard")', 'primary', 'Home')}
+                            </div>
+                        </div>
+                    `, 'max-w-md w-full p-8 text-center')}
+                </div>
+            `;
+        }
+
+
+        function AppLayout(content) {
+            const menuItems = [
+                { page: 'dashboard', icon: 'Home', label: 'Dashboard' },
+                { page: 'ordersInbox', icon: 'ShoppingCart', label: `New Orders (${getOrdersByStage().new.length})` },
+                { page: 'packing', icon: 'Package', label: `Packing (${getOrdersByStage().packing.length})` },
+                { page: 'readyForPickup', icon: 'Truck', label: `Ready for Pickup (${getOrdersByStage().ready.length})` },
+            ];
+
+            const sidebarHtml = `
+                <!-- Desktop Sidebar -->
+                <aside class="hidden lg:flex flex-col w-64 bg-white border-r border-gray-200 shadow-xl">
+                    <div class="flex items-center justify-start p-6 h-20 border-b border-yellow-100">
+                        <div class="w-10 h-10 mr-3 text-yellow-500">${getIconHTML('Zap', 'w-10 h-10')}</div>
+                        <span class="text-xl font-extrabold text-gray-900">Digistore Partner</span>
+                    </div>
+                    <nav class="flex-1 p-4 space-y-2">
+                        ${menuItems.map(item => `
+                            <button
+                                data-action="navigateTo"
+                                data-page="${item.page}"
+                                class="w-full flex items-center p-3 rounded-xl text-left transition duration-150 ${currentPage === item.page ? 'bg-yellow-500 text-white font-bold shadow-lg' : 'text-gray-600 hover:bg-gray-100'}"
+                            >
+                                ${getIconHTML(item.icon, 'w-6 h-6 mr-3')}
+                                <span>${item.label}</span>
+                            </button>
+                        `).join('')}
+                    </nav>
+                    <div class="p-4 border-t border-gray-100">
+                        ${Button('Logout', 'logout', 'secondary', 'LogIn')}
+                    </div>
+                </aside>
+            `;
+
+            const headerHtml = `
+                <!-- Mobile/Desktop Header -->
+                <header class="lg:hidden w-full bg-white shadow-lg p-4 flex items-center justify-between sticky top-0 z-10">
+                    <div class="flex items-center">
+                        <div class="w-8 h-8 mr-2 text-yellow-500">${getIconHTML('Zap', 'w-8 h-8')}</div>
+                        <span class="text-lg font-bold text-gray-900">Partner Portal</span>
+                    </div>
+                    ${Button('Logout', 'logout', 'secondary', 'LogIn', false, 'button')}
+                </header>
+            `;
+
+            const mobileNavHtml = `
+                <!-- Mobile Navigation Bar (Fixed Bottom) -->
+                <nav class="fixed bottom-0 left-0 right-0 lg:hidden bg-white mobile-nav-bar z-20">
+                    <div class="flex justify-around items-center h-16">
+                        ${menuItems.map(item => `
+                            <button
+                                data-action="navigateTo"
+                                data-page="${item.page}"
+                                class="flex flex-col items-center justify-center p-2 transition duration-150 ${currentPage === item.page ? 'text-yellow-500 font-bold' : 'text-gray-500 hover:text-yellow-600'}"
+                            >
+                                ${getIconHTML(item.icon, 'w-6 h-6')}
+                                <span class="text-xs mt-1">${item.label.split('(')[0].trim()}</span>
+                            </button>
+                        `).join('')}
+                    </div>
+                </nav>
+            `;
+
+            return `
+                ${sidebarHtml}
+                <main class="flex-1 overflow-y-auto pb-20 lg:pb-0">
+                    ${headerHtml}
+                    <div class="main-content">
+                        ${content}
+                    </div>
+                </main>
+                ${mobileNavHtml}
+            `;
+        }
+
+        function render() {
+            const appDiv = document.getElementById('app');
+            let content = '';
+
+            if (!isAuthenticated) {
+                content = LoginScreen();
+            } else {
+                switch (currentPage) {
+                    case 'dashboard':
+                        content = Dashboard();
+                        break;
+                    case 'ordersInbox':
+                        content = OrdersInbox();
+                        break;
+                    case 'packing':
+                        content = PackingPage();
+                        break;
+                    case 'readyForPickup':
+                        content = ReadyForPickupPage();
+                        break;
+                    case 'handoverConfirmation':
+                        content = HandoverConfirmationPage(selectedOrder ? selectedOrder.id : null);
+                        break;
+                    default:
+                        content = Dashboard();
+                }
+                content = AppLayout(content);
+            }
+
+            appDiv.innerHTML = content;
+            attachEventListeners();
+        }
+
+        function attachEventListeners() {
+            // Remove previous event listener to prevent duplicates
+            document.removeEventListener('click', handleActionClick);
+            document.removeEventListener('submit', handleFormSubmit);
+            document.removeEventListener('click', handleDashboardStatClick);
+            
+            // Add new listeners
+            document.addEventListener('click', handleActionClick);
+            document.addEventListener('submit', handleFormSubmit);
+            
+            // Specific listener for dashboard stat navigation
+            const dashboardStats = document.getElementById('dashboardStats');
+            if(dashboardStats) {
+                dashboardStats.addEventListener('click', handleDashboardStatClick);
+            }
+            
+            // Specific listener for packing checklist
+            const checklistContainer = document.getElementById('packingChecklistContainer');
+            if (checklistContainer) {
+                checklistContainer.addEventListener('click', handleChecklistClick);
+            }
+        }
+
+        function handleActionClick(event) {
+            const target = event.target.closest('[data-action]');
+            if (!target) return;
+
+            const action = target.getAttribute('data-action');
+            const page = target.getAttribute('data-page');
+            const orderId = target.getAttribute('data-order-id');
+
+            // Prevent navigation on disabled buttons
+            if (target.disabled) {
+                event.preventDefault();
+                return;
+            }
+
+            if (action === 'navigateTo' && page) {
+                navigateTo(page);
+            } else if (action === 'confirmOrder' && orderId) {
+                confirmOrder(orderId);
+            } else if (action === 'markAsPacked' && orderId) {
+                markAsPacked(orderId);
+            } else if (action === 'handOverOrder' && orderId) {
+                handOverOrder(orderId);
+            } else if (action === 'logout') {
+                logout();
+            } else if (action === 'declineOrder') {
+                // In a real app, this would update the order status to 'cancelled'
+                // For simplicity, we just filter it out here (mock decline)
+                const card = target.closest('.bg-white');
+                if (card) {
+                    const confirmDecline = window.confirm("Are you sure you want to decline this order? This action cannot be undone.");
+                    if (confirmDecline) {
+                        card.style.opacity = 0;
+                        setTimeout(() => {
+                            orders = orders.filter(o => o.id !== orderId);
+                            render();
+                        }, 300);
+                    }
+                }
+            }
+        }
+        
+        function handleFormSubmit(event) {
+            if (event.target.id === 'loginForm') {
+                event.preventDefault();
+                const username = document.getElementById('username').value;
+                const password = document.getElementById('password').value;
+                
+                // Simple mock authentication
+                if (username === 'seller' && password === '1234') {
+                    login();
+                } else {
+                    // In a real app, show an error message. Using console log for now.
+                    console.log('Invalid credentials');
+                }
+            }
+        }
+        
+        function handleDashboardStatClick(event) {
+            const target = event.target.closest('[data-navigate]');
+            if (target) {
+                const page = target.getAttribute('data-navigate');
+                if (page !== 'dashboard') { // Avoid navigating to dashboard when already on it
+                    navigateTo(page);
+                }
+            }
+        }
+        
+        function handleChecklistClick(event) {
+             const target = event.target.closest('[data-action="togglePackingStep"]');
+             if (target) {
+                const step = target.getAttribute('data-step');
+                const orderId = target.getAttribute('data-order-id');
+                togglePackingStep(orderId, step);
+            }
+        }
+
+        // --- INITIALIZATION ---
+        // Start the application when the DOM is fully loaded
+        window.addEventListener('DOMContentLoaded', (event) => {
+            render();
+        });
+    </script>
+</body>
+</html>
